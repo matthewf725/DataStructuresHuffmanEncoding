@@ -92,6 +92,11 @@ def huffman_encode(in_file, out_file):
     This second file is actually compressed by writing individual 0 and 1 bits to the file using the utility methods 
     provided in the huffman_bits_io module to write both the header and bits.
     Take not of special cases - empty file and file with only one unique character'''
+    
+    compressedFile = out_file.replace('.txt', '_compressed.txt')
+    bitWriter = HuffmanBitWriter(compressedFile)
+    outputFile = open(out_file, 'w')
+    outputFileWriter = HuffmanBitWriter(out_file)    
 
     #test for empty
     try:
@@ -101,41 +106,35 @@ def huffman_encode(in_file, out_file):
                 fileString = open(out_file, 'w')
                 fileString.write('')
                 fileString.close()
-
-                compressedFile = out_file.replace('.txt', '_compressed.txt')
-                bitWriter = HuffmanBitWriter(compressedFile)
                 bitWriter.write_code('')
                 bitWriter.close()
                 return
-            
     except FileNotFoundError:
         raise FileNotFoundError
     
     frequencies = cnt_freq(in_file)
     header = create_header(frequencies)
-
-    compressedFile = out_file.replace('.txt', '_compressed.txt')
-    bitWriter = HuffmanBitWriter(compressedFile)
-
-    outputFile = open(out_file, 'w')
-    outputFileWriter = HuffmanBitWriter(out_file)
-
-    outputFileWriter.write_str(header + "\r\n")
-    bitWriter.write_str(str(header) + "\r\n")
-
     rootNode = create_huff_tree(frequencies)
     codeKey = create_code(rootNode)
-    code = ""
-    if code is not None:
+    
+    codeList = []
+    if codeKey is not None:
         for char in fileString:
-            if char is not None and ord(char) is not None and char != "":
-                code += codeKey[ord(char)]
+            if char != "":
+                codeList.append(codeKey[ord(char)])
+    code = "".join(codeList)
 
+    outputFileWriter.write_str(header + "\r\n")
     outputFileWriter.write_str(code)
-    bitWriter.write_code(code)
     outputFileWriter.close()
     outputFile.close()
+
+    bitWriter.write_str(header + "\n")
+    bitWriter.write_code(code)
     bitWriter.close()
+
+
+
 
     # try:
     #     with open(in_file, 'r') as file:
