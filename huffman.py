@@ -97,6 +97,7 @@ def testEmpty(in_file, out_file):
                 bitWriter.write_code('')
                 bitWriter.close()
                 fileInput.close()
+                fileString.close()
                 return None
             return fileString    
     except FileNotFoundError:
@@ -110,12 +111,15 @@ def huffman_encode(in_file, out_file):
     provided in the huffman_bits_io module to write both the header and bits.
     Take not of special cases - empty file and file with only one unique character'''
     
+    #Edge cases
     try:
         fileString = testEmpty(in_file, out_file)
         if fileString is None:
             return
     except FileNotFoundError:
         raise FileNotFoundError
+    
+    #Everything else
     compressedFile = out_file.replace('.txt', '_compressed.txt')
     bitWriter = HuffmanBitWriter(compressedFile)
     outputFile = open(out_file, 'w')
