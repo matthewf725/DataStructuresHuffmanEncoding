@@ -84,18 +84,7 @@ def create_header(freqs):
     header = ' '.join(header)                
     return header
        
-
-def huffman_encode(in_file, out_file):
-    '''Takes inout file name and output file name as parameters - both files will have .txt extensions
-    Uses the Huffman coding process on the text from the input file and writes encoded text to output file
-    Also creates a second output file which adds _compressed before the .txt extension to the name of the file.
-    This second file is actually compressed by writing individual 0 and 1 bits to the file using the utility methods 
-    provided in the huffman_bits_io module to write both the header and bits.
-    Take not of special cases - empty file and file with only one unique character'''
-    
-
-
-    #test for empty
+def testEmpty(in_file, out_file):
     try:
         with open(in_file, 'r') as fileInput:
             fileString = fileInput.read()
@@ -108,10 +97,25 @@ def huffman_encode(in_file, out_file):
                 bitWriter.write_code('')
                 bitWriter.close()
                 fileInput.close()
-                return
+                return None
+            return fileString    
+    except FileNotFoundError:
+        raise FileNotFoundError  
+      
+def huffman_encode(in_file, out_file):
+    '''Takes inout file name and output file name as parameters - both files will have .txt extensions
+    Uses the Huffman coding process on the text from the input file and writes encoded text to output file
+    Also creates a second output file which adds _compressed before the .txt extension to the name of the file.
+    This second file is actually compressed by writing individual 0 and 1 bits to the file using the utility methods 
+    provided in the huffman_bits_io module to write both the header and bits.
+    Take not of special cases - empty file and file with only one unique character'''
+    
+    try:
+        fileString = testEmpty(in_file, out_file)
+        if fileString is None:
+            return
     except FileNotFoundError:
         raise FileNotFoundError
-    
     compressedFile = out_file.replace('.txt', '_compressed.txt')
     bitWriter = HuffmanBitWriter(compressedFile)
     outputFile = open(out_file, 'w')
