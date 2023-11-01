@@ -93,10 +93,7 @@ def huffman_encode(in_file, out_file):
     provided in the huffman_bits_io module to write both the header and bits.
     Take not of special cases - empty file and file with only one unique character'''
     
-    compressedFile = out_file.replace('.txt', '_compressed.txt')
-    bitWriter = HuffmanBitWriter(compressedFile)
-    outputFile = open(out_file, 'w')
-    outputFileWriter = HuffmanBitWriter(out_file)    
+
 
     #test for empty
     try:
@@ -105,13 +102,21 @@ def huffman_encode(in_file, out_file):
             if not fileString:
                 fileString = open(out_file, 'w')
                 fileString.write('')
-                fileString.close()
+
+                compressedFile = out_file.replace('.txt', '_compressed.txt')
+                bitWriter = HuffmanBitWriter(compressedFile)
                 bitWriter.write_code('')
                 bitWriter.close()
+                fileInput.close()
                 return
     except FileNotFoundError:
         raise FileNotFoundError
     
+    compressedFile = out_file.replace('.txt', '_compressed.txt')
+    bitWriter = HuffmanBitWriter(compressedFile)
+    outputFile = open(out_file, 'w')
+    outputFileWriter = HuffmanBitWriter(out_file)    
+
     frequencies = cnt_freq(in_file)
     header = create_header(frequencies)
     rootNode = create_huff_tree(frequencies)
