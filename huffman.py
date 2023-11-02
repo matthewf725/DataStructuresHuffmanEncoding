@@ -1,5 +1,6 @@
 from ordered_list import OrderedList
 from huffman_bit_writer import HuffmanBitWriter
+
 class HuffmanNode:
     def __init__(self, char, freq):
         self.char = char   # stored as an integer - the ASCII character code value
@@ -13,7 +14,6 @@ class HuffmanNode:
             return True
         return False
         
-        
     def __lt__(self, other):
         '''Needed in order to be inserted into OrderedList'''
         if self.freq < other.freq:
@@ -22,7 +22,6 @@ class HuffmanNode:
             return self.char < other.char
         else:
             return False
-    
 
 def cnt_freq(filename):
     '''Opens a text file with a given file name (passed as a string) and counts the 
@@ -56,7 +55,7 @@ def create_huff_tree(char_freq):
         nodes.add(newInternalNode)
 
     return nodes.pop(0)
-        
+
 def create_code(node):
     '''Returns an array (Python list) of Huffman codes. For each character, use the integer ASCII representation 
     as the index into the arrary, with the resulting Huffman code for that character stored at that location'''
@@ -67,9 +66,10 @@ def create_code(node):
                 return 
             traverse(node.left, code + '0', result)
             traverse(node.right, code + '1', result)
-    huffman_codes = ['' for _ in range(256)]  # Initialize an array with 256 empty strings
+    huffman_codes = [""] * 256  # Initialize an array with 256 empty strings
     traverse(node, '', huffman_codes)
     return huffman_codes
+
 
 def create_header(freqs):
     '''Input is the list of frequencies. Creates and returns a header for the output file
@@ -82,12 +82,12 @@ def create_header(freqs):
             #header.append("freq:")
             header.append(str(freq))
     header = ' '.join(header)                
-    return header
-       
+    return header.strip()
+
 def testEmpty(in_file, out_file):
     try:
-        with open(in_file, 'r') as fileInput:
-            fileString = fileInput.read()
+        with open(in_file, 'r') as inputFile:
+            fileString = inputFile.read()
             if not fileString:
                 fileString = open(out_file, 'w')
                 fileString.write('')
@@ -96,13 +96,13 @@ def testEmpty(in_file, out_file):
                 bitWriter = HuffmanBitWriter(compressedFile)
                 bitWriter.write_code('')
                 bitWriter.close()
-                fileInput.close()
+                inputFile.close()
                 fileString.close()
                 return None
             return fileString    
     except FileNotFoundError:
-        raise FileNotFoundError  
-      
+        raise FileNotFoundError
+    
 def huffman_encode(in_file, out_file):
     '''Takes inout file name and output file name as parameters - both files will have .txt extensions
     Uses the Huffman coding process on the text from the input file and writes encoded text to output file
@@ -123,7 +123,6 @@ def huffman_encode(in_file, out_file):
     compressedFile = out_file.replace('.txt', '_compressed.txt')
     bitWriter = HuffmanBitWriter(compressedFile)
     outputFile = open(out_file, 'w')
-    outputFileWriter = HuffmanBitWriter(out_file)    
 
     frequencies = cnt_freq(in_file)
     header = create_header(frequencies)
@@ -133,21 +132,18 @@ def huffman_encode(in_file, out_file):
     codeList = []
     if codeKey is not None:
         for char in fileString:
-            if char != "":
+            if char != "" and char is not None and ord(char) is not None:
                 codeList.append(codeKey[ord(char)])
     code = "".join(codeList)
 
-    outputFileWriter.write_str(header + "\r\n")
-    outputFileWriter.write_str(code)
-    outputFileWriter.close()
+    outputFile.write(header)
+    outputFile.write("\r\n")
+    outputFile.write(code)
     outputFile.close()
 
     bitWriter.write_str(header + "\n")
     bitWriter.write_code(code)
     bitWriter.close()
-
-
-
 
     # try:
     #     with open(in_file, 'r') as file:
@@ -187,4 +183,3 @@ def huffman_encode(in_file, out_file):
     #             file_out.close()
     # except FileNotFoundError:
     #     raise FileNotFoundError
-    
