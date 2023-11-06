@@ -1,5 +1,6 @@
 from ordered_list import OrderedList
 from huffman_bit_writer import HuffmanBitWriter
+from huffman_bit_reader import HuffmanBitReader
 
 class HuffmanNode:
     def __init__(self, char, freq):
@@ -82,7 +83,7 @@ def create_header(freqs):
             #header.append("freq:")
             header.append(str(freq))
     header = ' '.join(header)                
-    return header.strip()
+    return str(header.strip())
 
 def testEmpty(in_file, out_file):
     try:
@@ -137,7 +138,7 @@ def huffman_encode(in_file, out_file):
     code = "".join(codeList)
 
     outputFile.write(header)
-    outputFile.write("\r\n")
+    outputFile.write("\n")
     outputFile.write(code)
     outputFile.close()
 
@@ -145,41 +146,47 @@ def huffman_encode(in_file, out_file):
     bitWriter.write_code(code)
     bitWriter.close()
 
-    # try:
-    #     with open(in_file, 'r') as file:
-    #         fileData = file.read()
-    #         if fileData:  
-    #             frequencies = cnt_freq(in_file)
-    #             rootNode = create_huff_tree(frequencies)
-    #             codeKey = create_code(rootNode)
-    #             header = create_header(frequencies)
-                
-    #             compressed_file = out_file.replace('.txt', '_compressed.txt')
-    #             bitwriter = HuffmanBitWriter(compressed_file)
-    #             outFileWrite = HuffmanBitWriter(out_file)
+def huffman_decode(encoded_file, decode_file):
+    try:
+        reader = HuffmanBitReader(encoded_file)        
+    except FileNotFoundError:
+        raise FileNotFoundError
+    decompressed = open(decode_file, 'w')    
+    header = reader.read_str()
+    if not header:
+        decompressed.write("")
+        decompressed.close()
+        reader.close()
+        return None
+    freq = parse_header(header)
+    rootNode = create_huff_tree(freq)
+    charCount = 0
+    headerAsList = header.split()
+    for index in range(len(headerAsList)):
+        if index % 2 != 0:
+            charCount += int(headerAsList[index])
 
-    #             code = ''
-    #             if code is not None:
-    #                 for char in fileData:
-    #                     if (char is not None and ord(char) is not None and char != ''):
-    #                         code += codeKey[ord(char)]
-                
-    #             outFileWrite.write_str(header)
-    #             outFileWrite.write_str("\r\n")
-    #             outFileWrite.write_str(code)
-    #             outFileWrite.close()
+    for char in range(charCount):
+        current_node = rootNode  # Start at the root
+        while current_node.left is not None and current_node.right is not None:
+            bit = reader.read_bit()
+            if bit:
+                current_node = current_node.right
+            else:
+                current_node = current_node.left
+        if current_node is not None and current_node.left is None and current_node.right is None:
+            decompressed.write(chr(current_node.char))
 
-    #             bitwriter.write_str(str(header) + "\n")
-    #             bitwriter.write_code(code)
-    #             bitwriter.close()
-       
-    #         else: #if file is empty
-    #             file_out = open(out_file, 'w')
-    #             file_out.write('')
-    #             compressed_file = out_file.replace('.txt', '_compressed.txt')
-    #             bitwriter = HuffmanBitWriter(compressed_file)
-    #             bitwriter.write_code('')
-    #             bitwriter.close()
-    #             file_out.close()
-    # except FileNotFoundError:
-    #     raise FileNotFoundError
+    reader.close()
+    decompressed.close()
+
+
+
+
+def parse_header(header_string):
+    frequencies = [0] * 256
+    lst = header_string.split()
+    for index in range(len(lst) - 1):
+        if index % 2 == 0:
+            frequencies[int(lst[index])] = int(lst[index + 1])
+    return frequencies
